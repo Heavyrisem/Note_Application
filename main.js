@@ -39,7 +39,7 @@ ipcMain.on('get_note', (event, Data) => {
         for (var i in temp)
             lastData.push(temp[i]);
 
-        console.log(lastData)
+        // console.log(lastData)
         lastData = (lastData != null) ? lastData.reverse() : lastData;
         event.reply('need_update', lastData);
     })
