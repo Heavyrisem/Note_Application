@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+    <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Note App</title>
+            <link rel="stylesheet" type="text/css" href="style.css">
+            <script>
+                const { ipcRenderer } = require('electron');
+                
+                window.onload = get_note;
+                // ipcRenderer.on('need_update', (event, Data) => {
+                //     console.log(Data);
+                //     reload_note(Data);
+                //     // location.reload();
+                // });
+                let lastNum;
+
+                function reload_note(Data) {
+                    let note_root = document.getElementById('root_note');
+                    
+                    while (note_root.hasChildNodes()) {
+                        note_root.removeChild(note_root.firstChild);
+                    }
+                    let input_form = document.createElement('form');
+                    input_form.name = 'note_form';
+                    input_form.className = "note"
+                    input_form.innerHTML = `<input name="title" type="text" class="note_title_input" placeholder="Title"></input><button onclick="add_note()" type="button">Submit</button><input name="description" type="text" class="note_description_input" placeholder="Description"></input>`;
+
+                    note_root.append(input_form);
+
+                    Data.forEach((value, index) => {
+                        if (value == undefined) return;
+                            let note_str = `<span class="note_title">${value.title}</span><span class="note_delete" id="${value.id}" onclick="delete_note(this)">×</span><br><span class="note_description">${value.description}</span>`;
+                            let note = document.createElement('div');
+                            note.className = "note";
+                            note.id = "note_"+value.id;
+                            note.innerHTML = note_str;
+                            
+                            note_root.append(note);
+                    });
+                }
+
+                function get_note() {
+                    let note_root = document.getElementById('root_note');
+
+                    ipcRenderer.send('get_note', 'get');
+                    ipcRenderer.on('need_update', (event, Data) => {
+                        reload_note(Data);
+                    });
+
+
+                }
+
+                function add_note() {
+                    const title = document.note_form.title.value;
+                    const description = document.note_form.description.value;
+
+                    if (!(title == '' || description == '')) {
+                        ipcRenderer.send('add_note', { title: document.note_form.title.value, description: document.note_form.description.value });
+                        // location.reload();
+                    }
+                }
+
+                function delete_note(e) {
+                    ipcRenderer.send('delete_note', e.id);
+                    document.getElementById("note_"+e.id).remove();
+                }
+            </script>
+        </head>
+
+        <body>
+            <h1>Note App</h1>
+
+            <div class="note_list" id="root_note">
+
+            </div>
+        </body>
+    </html>
