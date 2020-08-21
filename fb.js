@@ -1,10 +1,6 @@
 const firebase = require('firebase');
 const FBinfo = require('./config.json');
-let FBapp = firebase.initializeApp({
-    apiKey: FBinfo.apiKey,
-    authDomain: FBinfo.authDomain,
-    databaseURL: FBinfo.databaseURL,
-});
+let FBapp = firebase.initializeApp(FBinfo);
 let database = firebase.database();
 // let userId = firebase.auth().currentUser.uid;
 database.ref('/heavyrisem').set({

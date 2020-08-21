@@ -28,6 +28,7 @@
 
                     note_root.append(input_form);
 
+                    if (Data == null) return;
                     Data.forEach((value, index) => {
                         if (value == undefined) return;
                             let note_str = `<span class="note_title">${value.title}</span><span class="note_delete" id="${value.id}" onclick="delete_note(this)">×</span><br><span class="note_description">${value.description}</span>`;

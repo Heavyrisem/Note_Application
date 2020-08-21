@@ -33,7 +33,14 @@ function createWindow () {
 ipcMain.on('get_note', (event, Data) => {
     database.ref(`/${UserInfo.id}/notes`).on("value", (snapshot) => {
         console.log('updated');
-        lastData = snapshot.val().reverse();
+
+        lastData = [];
+        let temp = snapshot.val();
+        for (var i in temp)
+            lastData.push(temp[i]);
+
+        console.log(lastData)
+        lastData = (lastData != null) ? lastData.reverse() : lastData;
         event.reply('need_update', lastData);
     })
 })
@@ -45,16 +52,13 @@ ipcMain.on('add_note', (event, Data) => {
         id: (lastData[0] != null) ? lastData[0].id+1 : 1
     };
 
-    database.ref('/heavyrisem/notes/'+newData.id).set(newData);
+    database.ref(`/${UserInfo.id}/notes/${newData.id}`).set(newData);
 
     // console.log(sampleData);
 });
 
 ipcMain.on('delete_note', (event, Id) => {
-    sampleData.splice(sampleData.filter((value, index) => {
-        console.log(index)
-        if (value.id == Id) return index;
-    }), 1);
+    database.ref(`/${UserInfo.id}/notes/${Id}`).remove();
 })
 
 
