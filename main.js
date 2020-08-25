@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, ipcRenderer } = require('electron');
 // import io from 'socket.io-client';
 const io = require('socket.io-client');
 const socket = io('http://localhost:6777');
@@ -10,11 +10,11 @@ let cookie = require('./cookie.js');
 cookie = new cookie();
 const macaddr = require('./macaddress');
 
-
+console.log(ipcRenderer)
 
 
 let userinfo = {
-    id: 'heavyrisem'
+    id: undefined
 }
 
 let win;
@@ -60,11 +60,37 @@ ipcMain.on('cookie_check', (event, Data) => {
 })
 
 
-ipcMain.on('login', (event, userinfo) => {
+ipcMain.on('login', async (event, data) => {
 
-    console.log('sending data');
-    socket.emit('login', userinfo);
+    data.macaddr = await macaddr();
+    socket.emit('login', data);
 
+    socket.once('login', Data => {
+        switch (Data.status) {
+            case "ID":
+                event.reply("login_deny_id"); console.log("No User"); break;
+            case "PW":
+                event.reply("login_deny_pw"); console.log("Wrong Password"); break;
+            default: {
+                event.reply("login_allow", undefined);
+                userinfo.id=data.id;
+                console.log(userinfo);
+                ipcMain.emit("get_note", undefined);
+                console.log("Login Succeed");
+                break;
+            }
+        };
+    });
+
+});
+ipcMain.on('test', () => {console.log('test')});
+ipcMain.on('register', async (event, userinfo) => {
+
+    userinfo.macaddr = await macaddr();
+    socket.emit("register", userinfo);
+    socket.on("register", result => {
+        event.reply("register", result);
+    });
 });
 
 socket.on('test', (data) => {
@@ -73,23 +99,24 @@ socket.on('test', (data) => {
 
 // ==================================== Note Processing =====================================
 
-ipcMain.on("get_note", (event) => {
-
+ipcMain.on("get_note", (ev, data) => {
+    
     if (userinfo.id == undefined) return;
+    let event = ev;
     console.log('losg')
     socket.emit("get_note", userinfo.id);
     socket.on("need_update", (Data) => {
         console.log('updated');
-        if (Data == null) return console.log("loading error");
+        // if (Data == null) return console.log("loading error");
 
         lastData = [];
         let temp = Data;
         for (var i in temp)
             lastData.push(temp[i]);
-
-        // console.log(lastData)
+        
+        console.log(ipcRenderer);
         lastData = (lastData != null) ? lastData.reverse() : lastData;
-        event.reply('need_update', lastData);
+        ipcRenderer.reply('need_update', lastData);
     });
 
 });

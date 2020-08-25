@@ -1,6 +1,4 @@
-const { ipcRenderer } = require('electron');
-
-// ipcRenderer.send('cookie_check', undefined);
+ipcRenderer.send('cookie_check', undefined);
 ipcRenderer.on('cookie_check', (event, Data) => {
     if (Data == undefined) {
         console.log('open loginLayout')
@@ -17,6 +15,7 @@ window.onload = get_note;
 let lastNum;
 
 function reload_note(Data) {
+    console.log('update');
     let note_root = document.getElementById('root_note');
     
     while (note_root.hasChildNodes()) {

@@ -151,3 +151,13 @@
     background: white;
     color: black;
 }
+
+.input_warning {
+    font-size: .7rem;
+    color: red;
+    display: none;
+}
+#id_input:hover {
+    font-weight: bold;
+    cursor: pointer;
+}

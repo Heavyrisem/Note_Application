@@ -8,6 +8,9 @@ const firebase = require('firebase');
 const FB = firebase.initializeApp(FBconfig)
 const database = firebase.database();
 
+const crypto = require('crypto');
+
+
 io.on("connection", (socket) => {
 
     console.log('connection')
@@ -26,8 +29,9 @@ io.on("connection", (socket) => {
             console.log('updated');
             
             let result = snapshot.val();
-            if (result == null) socket.emit("need_update", "Error result is null");
-            else socket.emit('need_update', result);
+            // if (result == null) socket.emit("need_update", "Error result is null");
+            // else socket.emit('need_update', result);
+            socket.emit('need_update', result);
         });
 
     });
@@ -40,6 +44,38 @@ io.on("connection", (socket) => {
         database.ref(`/${Data.userid}/notes/${Data.Id}`).remove();
     });
 
+
+    // ================================= Login =============================================
+    socket.on("login", userinfo => {
+
+        console.log(userinfo);
+        database.ref(`/${userinfo.id}/logindata`).once("value", data => {
+            if (data.val() == null) {
+                console.log("No user");
+                socket.emit("login", {status: "ID"});
+            } else if (!data.val().password == crypto.createHash("sha512").update(userinfo.password).digest('base64')) {
+                console.log("wrong password");
+                socket.emit("login", {status: "PW"});
+            } else {
+                socket.emit("login", {status: "ALLOW", id: userinfo.id, macaddr: data.val().macaddr});
+            }
+        });
+
+    });
+
+    socket.on("register", userinfo => {
+
+        const userdata = {
+            password: undefined,
+            macaddr: userinfo.macaddr
+        };
+
+        userdata.password = crypto.createHash("sha512").update(userinfo.password).digest('base64');
+        
+        database.ref(`/${userinfo.id}/logindata`).set(userdata);
+        socket.emit("register",userdata.id);
+
+    });
 });
 
 server.listen(PORT, () => {

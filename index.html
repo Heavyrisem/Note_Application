@@ -4,6 +4,9 @@
             <meta charset="UTF-8">
             <title>Note App</title>
             <link rel="stylesheet" type="text/css" href="style.css">
+            <script>
+                const { ipcRenderer } = require('electron');
+            </script>
             <script src="loginPopup.js"></script>
             <script src="mainProcessor.js"></script>
         </head>
@@ -13,7 +16,9 @@
                 <form name="LoginForm" class="loginInput">
                     <h2>Login</h2>
                     <input type="text" class="infoInput" name="id" placeholder="ID"/>
+                    <span class="input_warning" id="id_input" onclick="register()">없는 아이디 입니다. 새로 만드시겠습니까?</span>
                     <input type="password" class="infoInput" name="password" placeholder="Password"/>
+                    <span class="input_warning" id="pw_input">비밀번호가 틀렸습니다.</span>
                     <div class="autologin"><input type="checkbox" name="autologin"><span>Auto Login</span></div>
                     
                     <button type="button" onclick="loginNext()">Next</button>
