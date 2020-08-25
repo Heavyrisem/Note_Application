@@ -53,7 +53,7 @@ io.on("connection", (socket) => {
             if (data.val() == null) {
                 console.log("No user");
                 socket.emit("login", {status: "ID"});
-            } else if (!data.val().password == crypto.createHash("sha512").update(userinfo.password).digest('base64')) {
+            } else if (data.val().password != crypto.createHash("sha512").update(userinfo.password).digest('base64')) {
                 console.log("wrong password");
                 socket.emit("login", {status: "PW"});
             } else {

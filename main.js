@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, ipcRenderer } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 // import io from 'socket.io-client';
 const io = require('socket.io-client');
 const socket = io('http://localhost:6777');
@@ -10,7 +10,6 @@ let cookie = require('./cookie.js');
 cookie = new cookie();
 const macaddr = require('./macaddress');
 
-console.log(ipcRenderer)
 
 
 let userinfo = {
@@ -42,6 +41,8 @@ function createWindow () {
     });
 }
 
+// ======================================== Cookie ======================================
+
 ipcMain.on('cookie_check', (event, Data) => {
 
     cookie.getCookie('userinfo').then(async (cookies) => {
@@ -57,8 +58,16 @@ ipcMain.on('cookie_check', (event, Data) => {
         }
     });
 
+});
+
+ipcMain.on('cookie_add', (event, Data) => {
+
+    cookie.addCookie('userinfo', {id: Data.id, macaddr: Data.macaddr}, )
+
 })
 
+
+// ====================================== Login ======================================
 
 ipcMain.on('login', async (event, data) => {
 
@@ -74,7 +83,6 @@ ipcMain.on('login', async (event, data) => {
             default: {
                 event.reply("login_allow", undefined);
                 userinfo.id=data.id;
-                console.log(userinfo);
                 ipcMain.emit("get_note", undefined);
                 console.log("Login Succeed");
                 break;
@@ -83,14 +91,16 @@ ipcMain.on('login', async (event, data) => {
     });
 
 });
-ipcMain.on('test', () => {console.log('test')});
+
 ipcMain.on('register', async (event, userinfo) => {
 
     userinfo.macaddr = await macaddr();
     socket.emit("register", userinfo);
+
     socket.on("register", result => {
-        event.reply("register", result);
+        event.reply("register", userinfo);
     });
+
 });
 
 socket.on('test', (data) => {
@@ -114,9 +124,8 @@ ipcMain.on("get_note", (ev, data) => {
         for (var i in temp)
             lastData.push(temp[i]);
         
-        console.log(ipcRenderer);
         lastData = (lastData != null) ? lastData.reverse() : lastData;
-        ipcRenderer.reply('need_update', lastData);
+        win.webContents.send('need_update', lastData);
     });
 
 });
