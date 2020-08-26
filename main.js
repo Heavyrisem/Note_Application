@@ -47,27 +47,52 @@ ipcMain.on('cookie_check', (event, Data) => {
 
     cookie.getCookie('userinfo').then(async (cookies) => {
         const macaddress = await macaddr();
-        console.log('addr', macaddress);
+        
 
         if (cookies.length == 0) {
-            event.reply("cookie_check", undefined);
+            event.reply("need_login", undefined);
         } else {
-            let cookieInfo = cookies[0];
-            cookie.removeCookie();
-            console.log(cookieInfo);
+            // let cookieInfo = cookies[0];
+            console.log(cookies);
+            cookie.removeCookie('userinfo', 'id');
+            cookie.removeCookie('userinfo','macaddr');
+            cookie.removeCookie('userinfo','userinfo');
         }
     });
 
 });
 
-ipcMain.on('cookie_add', (event, Data) => {
+ipcMain.on('cookie_add', (Data) => {
 
-    cookie.addCookie('userinfo', {id: Data.id, macaddr: Data.macaddr}, )
+    macaddr().then(adr => {
 
-})
+        cookie.addCookie('id', Data.id, 'userinfo/id', 7);
+        cookie.addCookie('macaddr'. adr, 'userinfo/macaddr', 7);
+
+    });
+
+});
 
 
 // ====================================== Login ======================================
+
+ipcMain.on('cookie_login', (event, data) => {
+    socket.emit('login', data);
+
+    socket.once('login', data => {
+        switch (data.status) {
+
+            case "ALLOW":
+                win.webContents.send('login_allow');
+                ipcMain.emit("get_note", undefined);
+                break;
+            default: 
+                win.webContents.send('need_login', undefined);
+                break;
+            
+        }
+    })
+});
 
 ipcMain.on('login', async (event, data) => {
 
@@ -75,18 +100,21 @@ ipcMain.on('login', async (event, data) => {
     socket.emit('login', data);
 
     socket.once('login', Data => {
+
         switch (Data.status) {
             case "ID":
                 event.reply("login_deny_id"); console.log("No User"); break;
             case "PW":
                 event.reply("login_deny_pw"); console.log("Wrong Password"); break;
-            default: {
-                event.reply("login_allow", undefined);
+            default:
+                win.webContents.send("login_allow", undefined);
                 userinfo.id=data.id;
                 ipcMain.emit("get_note", undefined);
                 console.log("Login Succeed");
+
+                if (data.autologin) ipcMain.emit("cookie_add", {id: data.id});
                 break;
-            }
+
         };
     });
 

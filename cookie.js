@@ -21,7 +21,7 @@ class Cookie {
             if (expire != undefined) {
                 today.setDate(today.getDate() + expire);
                 today = today.getTime() / 1000;
-                console.log(today);
+                // console.log(today);
             }
     
             const cookie = {
@@ -39,8 +39,8 @@ class Cookie {
         })
     }
 
-    removeCookie() {
-        session.defaultSession.cookies.remove(noteapp+'/userinfo', 'macaddr').then(value => {console.log(value)}).catch(err => {console.log('rmerr', err)});
+    removeCookie(path, key) {
+        session.defaultSession.cookies.remove(noteapp+"/"+path, key) //.then(value => {console.log(value)}).catch(err => {console.log('rmerr', err)});
     }
 }
 

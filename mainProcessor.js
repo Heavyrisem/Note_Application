@@ -1,5 +1,5 @@
 ipcRenderer.send('cookie_check', undefined);
-ipcRenderer.on('cookie_check', (event, Data) => {
+ipcRenderer.on('need_login', (event, Data) => {
     if (Data == undefined) {
         console.log('open loginLayout')
         showLoginLayout();
