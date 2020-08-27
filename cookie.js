@@ -2,10 +2,10 @@ const { session } = require('electron');
 const noteapp = "http://www.noteapp.com";
 
 class Cookie {
-    getCookie(path) {
+    getCookie(path, name) {
         return new Promise((resolve, reject) => {
 
-            session.defaultSession.cookies.get({url: noteapp+'/'+path}).then((cookies) => {
+            session.defaultSession.cookies.get({path: path, name: (name) ? name : undefined}).then((cookies) => {
                 resolve(cookies);
             }).catch(err => {
                 resolve(err);

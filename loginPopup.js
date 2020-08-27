@@ -1,3 +1,5 @@
+// const { ipcRenderer } = require("electron");
+
 function hideLoginLayout() {
     document.getElementById("loginForm").style.display = "none";
 }
@@ -15,12 +17,8 @@ function register() {
 
     ipcRenderer.send('register', info);
     ipcRenderer.once("register", id => {
-        test(id);
+        ipcRenderer('login', info);
     });
-}
-
-function test(id) {
-    ipcRenderer.send('login', id);
 }
 
 function loginNext() {
@@ -51,6 +49,7 @@ ipcRenderer.once('login_deny_id', (event, Data) => {
 });
 
 ipcRenderer.once('login_allow', (event, Data) => {
+    console.log(Data);
     console.log("login_allow");
     hideLoginLayout();
 });

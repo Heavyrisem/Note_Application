@@ -47,13 +47,13 @@ io.on("connection", (socket) => {
 
     // ================================= Login =============================================
     socket.on("login", userinfo => {
-
+        const hashedpw = (userinfo.id) ? crypto.createHash("sha512").update((userinfo.password) ? userinfo.password : '').digest('base64') : undefined;
         console.log(userinfo);
         database.ref(`/${userinfo.id}/logindata`).once("value", data => {
             if (data.val() == null) {
                 console.log("No user");
                 socket.emit("login", {status: "ID"});
-            } else if ((data.val().password == crypto.createHash("sha512").update(userinfo.password).digest('base64') || data.val().macaddr == userinfo.macaddr)) {
+            } else if (data.val().password == hashedpw || data.val().macaddr == userinfo.macaddr) {
                 socket.emit("login", {status: "ALLOW", id: userinfo.id, macaddr: data.val().macaddr});
             } else {
                 console.log("wrong password");

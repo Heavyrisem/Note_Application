@@ -45,7 +45,7 @@ function createWindow () {
 
 ipcMain.on('cookie_check', (event, Data) => {
 
-    cookie.getCookie('userinfo').then(async (cookies) => {
+    cookie.getCookie('/').then(async (cookies) => {
         const macaddress = await macaddr();
         
 
@@ -53,10 +53,11 @@ ipcMain.on('cookie_check', (event, Data) => {
             event.reply("need_login", undefined);
         } else {
             // let cookieInfo = cookies[0];
-            console.log(cookies);
-            cookie.removeCookie('userinfo', 'id');
-            cookie.removeCookie('userinfo','macaddr');
-            cookie.removeCookie('userinfo','userinfo');
+            const id = await cookie.getCookie('/', 'id');
+            const macaddr = await cookie.getCookie('/', 'macaddress');
+            // console.log(id[0], macaddr[0]);
+
+            ipcMain.emit('cookie_login', {id: id[0].value, macaddr: macaddr[0].value});
         }
     });
 
@@ -65,10 +66,8 @@ ipcMain.on('cookie_check', (event, Data) => {
 ipcMain.on('cookie_add', (Data) => {
 
     macaddr().then(adr => {
-
-        cookie.addCookie('id', Data.id, 'userinfo/id', 7);
-        cookie.addCookie('macaddr'. adr, 'userinfo/macaddr', 7);
-
+        cookie.addCookie('id', Data.id, '/', 7);
+        cookie.addCookie('macaddress', adr, '/', 7);
     });
 
 });
@@ -76,14 +75,16 @@ ipcMain.on('cookie_add', (Data) => {
 
 // ====================================== Login ======================================
 
-ipcMain.on('cookie_login', (event, data) => {
-    socket.emit('login', data);
+ipcMain.on('cookie_login', (a) => {
+    // console.log(a);
+    socket.emit('login', a);
 
     socket.once('login', data => {
         switch (data.status) {
 
             case "ALLOW":
                 win.webContents.send('login_allow');
+                userinfo.id = data.id;
                 ipcMain.emit("get_note", undefined);
                 break;
             default: 
@@ -131,17 +132,13 @@ ipcMain.on('register', async (event, userinfo) => {
 
 });
 
-socket.on('test', (data) => {
-    console.log(("From server : ", data));
-});
-
 // ==================================== Note Processing =====================================
 
-ipcMain.on("get_note", (ev, data) => {
+ipcMain.on("get_note", () => {
     
     if (userinfo.id == undefined) return;
-    let event = ev;
-    console.log('losg')
+    
+    
     socket.emit("get_note", userinfo.id);
     socket.on("need_update", (Data) => {
         console.log('updated');
